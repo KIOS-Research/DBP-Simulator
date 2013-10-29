@@ -144,21 +144,42 @@ function LoadInpFile_Callback(hObject, eventdata, handles)
         set(handles.axes1,'Color','w')
         set(handles.axes1,'XTick',[])
         set(handles.axes1,'YTick',[])
-        
         % graphs
         set(handles.SaveNetwork,'visible','on');
+%         handles.psave=get(handles.SaveNetwork,'position');
+        handles.psave=[90.8000 1.0769 13.8000 1.6923];
+
         set(handles.Zoom,'visible','on');
-        set(handles.NodesID,'visible','on');
-        set(handles.LinksID,'visible','on');      
-        set(handles.NodesID,'value',0);
-        set(handles.LinksID,'value',0);
+        handles.pZ=[155.0000 1.1538 13.8000 1.6923];
         
+        set(handles.NodesID,'visible','on');
+        handles.pnodes=[125.8000 1.0769 14.4000 1.7692];
+
+        set(handles.LinksID,'visible','on');  
+        handles.plinks=[141.6000 1.0769 13.2000 1.7692];
+       
         set(handles.FontsizeENplotText,'visible','on');
-        set(handles.FontsizeENplot,'visible','on');    
+        handles.pfonttxt=[105.8000 1.3077 10.4000 1.1538];
+        
+        set(handles.FontsizeENplot,'visible','on');   
+        handles.pfontsz=[116.4000 1.2308 6.8000 1.3077];
+        
         set(handles.wtitle,'visible','off');
 
-        handles.pstInit=get(handles.axes1,'position');
-        % Update handles structure
+        set(handles.NodesID,'value',0);
+        set(handles.LinksID,'value',0);
+        set(handles.FontsizeENplot,'String',12);
+    
+    
+        handles.pstInit=[50.2000 0.7692 120.2000 45.3077];
+                
+        set(handles.axes1,'position',handles.pstInit);
+        set(handles.Zoom,'position',handles.pZ);
+        set(handles.SaveNetwork,'position',handles.psave);
+        set(handles.NodesID,'position',handles.pnodes);
+        set(handles.LinksID,'position',handles.plinks);
+        set(handles.FontsizeENplotText,'position',handles.pfonttxt);
+        set(handles.FontsizeENplot,'position',handles.pfontsz);        % Update handles structure
         guidata(hObject, handles);
     end
     
@@ -192,17 +213,25 @@ function Zoom_Callback(hObject, eventdata, handles)
 % hObject    handle to Zoom (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-    if handles.ZoomIO==1
-        zoom on;
-        handles.ZoomIO=0;
-        set(handles.Zoom,'String','Reset');
-    elseif handles.ZoomIO==0
-        zoom off;
-        set(handles.Zoom,'String','Zoom');
-        handles.ZoomIO=1;
-    end
-    
 
+    str = get(handles.Zoom,'String');
+
+    if strcmp('Zoom',str) || strcmp('Reset',str)
+        if handles.ZoomIO==1
+            zoom on;
+            handles.ZoomIO=0;
+            set(handles.Zoom,'String','Reset');
+        elseif handles.ZoomIO==0
+            zoom off;
+            set(handles.Zoom,'String','Zoom');
+            handles.ZoomIO=1;
+        end
+%     elseif strcmp(str,'ResultsWA')
+%         results(handles,'AverageWaterAge','Water Age | (hours)');
+%     elseif strcmp(str,'ResultsWD')
+%         s=sprintf('Demand | (%s)',char(handles.B.LinkFlowUnits));
+%         results2(handles,'AverageDemand',s)
+    end
     % Update handles structure
     guidata(hObject, handles);
 
@@ -398,13 +427,12 @@ pause(.1);
     handles.Qmax=[];  
     handles.Qmax=[handles.Qmax; handles.B.getNodeActualQuality];
             
-    
     figure(h)
     subplot(2,2,2)
     hist(handles.Qmax(:,bd))
     xlabel('Age(hours)');
     ylabel('Nodes with demands');
-    title('Maximum of Water Age'); 
+    title('Maximum Water Age'); 
 %     title('Maximum of Water Age of last 2 days'); 
 
     % Update handles structure
@@ -431,14 +459,15 @@ pause(.1);
     subplot(2,2,3);
     plot(handles.Qmean(:,bd),sum(s.Demand(:,bd)),'x');
     xlabel('Average age(hours)');
-    ylabel('Daily volume total(m^3)');
+    ss=sprintf('Daily volume total(%s)',char(handles.B.LinkFlowUnits));
+    ylabel(ss);
     % title('Average Water Age of last 2 days'); 
 
     figure(h)
     subplot(2,2,4);
     plot(handles.Qmax(:,bd),sum(s.Demand(:,bd)),'x');
     xlabel('Maximum age(hours)');
-    ylabel('Daily volume total(m^3)');
+    ylabel(ss);
     % title('Average Water Age of last 2 days'); 
 
     % Update handles structure
@@ -553,6 +582,13 @@ function waterage_Callback(hObject, eventdata, handles)
 % hObject    handle to waterage (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if exist([pwd,'\RESULTS\','hNodesID.f'])==2
+    delete([pwd,'\RESULTS\','hNodesID.f'],'hNodesID','-mat');
+end
+if exist([pwd,'\RESULTS\','hLinksID.f'])==2
+    delete([pwd,'\RESULTS\','hLinksID.f'],'hLinksID','-mat');
+end
+        
 col = get(handles.waterage,'backg'); 
 set(handles.waterage,'str','LOADING...','backg','c') 
 pause(.1);
@@ -569,7 +605,9 @@ pause(.1);
     qualitystep=str2num(get(handles.qualitystep,'String'));
     Kb=str2num(get(handles.Kb,'String'));
     Kw=str2num(get(handles.Kw,'String'));
-
+        
+    handles.B.setQualityType('age','hour')
+        
     handles.B.setTimeSimulationDuration(simulateTime*3600)%4days
     handles.B.setTimeQualityStep(qualitystep)
     handles.B.setTimeStatisticsType('AVERAGE')
@@ -578,12 +616,11 @@ pause(.1);
     handles.B.solveCompleteHydraulics
     handles.B.solveCompleteQuality
 
-    handles.B.setQualityType('age','hour')
     handles.B.setLinkBulkReactionCoeff(ones(1,handles.B.LinkCount)*Kb);
     handles.B.setLinkWallReactionCoeff(ones(1,handles.B.LinkCount)*Kw);
 
-    WaterAge=[];  
-    WaterAge=[WaterAge; handles.B.getNodeActualQuality];
+    handles.WaterAge=[];  
+    handles.WaterAge=[handles.WaterAge; handles.B.getNodeActualQuality];
 
     % Colormaps
     handles.B.plot
@@ -602,15 +639,15 @@ pause(.1);
     set(handles.cbar,'FontName','Helvetica','XTickLabel',{'     Low','Guarded','Elevated','High','Very-High'})
 
     for i=1:handles.B.NodeCount
-        if WaterAge(:,i)<xtick(2)
+        if handles.WaterAge(:,i)<xtick(2)
             C2='b'; C1='b';MarkerSize=14;
-        elseif xtick(2)<WaterAge(:,i) && WaterAge(:,i)<xtick(3)
+        elseif xtick(2)<handles.WaterAge(:,i) && handles.WaterAge(:,i)<xtick(3)
             C2='c'; C1='c';MarkerSize=15;
-        elseif xtick(3)<WaterAge(:,i) && WaterAge(:,i)<xtick(4)
+        elseif xtick(3)<handles.WaterAge(:,i) && handles.WaterAge(:,i)<xtick(4)
             C2='g'; C1='g';MarkerSize=16;
-        elseif xtick(4)<WaterAge(:,i) && WaterAge(:,i)<xtick(5)
+        elseif xtick(4)<handles.WaterAge(:,i) && handles.WaterAge(:,i)<xtick(5)
             C2=[1 .5 0]; C1=[1 .5 0];MarkerSize=17;
-        elseif xtick(5)<WaterAge(:,i)
+        elseif xtick(5)<handles.WaterAge(:,i)
             C2='r'; C1='r';MarkerSize=18;
         end
         plot(handles.axes1,handles.B.NodeCoordinates{1}(i),handles.B.NodeCoordinates{2}(i),'o','LineWidth',2,'MarkerEdgeColor',C1,...
@@ -625,13 +662,36 @@ pause(.1);
     set(handles.wtitle,'visible','on');
     set(handles.wtitle,'String','Average Water Age');
     
+%     set(handles.SaveNetwork,'visible','off');
+    handles.psaveN=handles.psave;
+    handles.psaveN(2)=6.5;
+    set(handles.SaveNetwork,'position',handles.psaveN);
 
-    set(handles.SaveNetwork,'visible','off');
-    set(handles.Zoom,'visible','off');
-    set(handles.NodesID,'visible','off');
-    set(handles.LinksID,'visible','off');
-    set(handles.FontsizeENplotText,'visible','off');
-    set(handles.FontsizeENplot,'visible','off');
+%     set(handles.Zoom,'visible','off');
+%     set(handles.Zoom,'String','ResultsWA');
+    handles.pZN=handles.pZ;
+    handles.pZN(2)=6.5;
+    set(handles.Zoom,'position',handles.pZN);
+            
+    handles.pnodesN=handles.pnodes;
+    handles.pnodesN(2)=6.5;
+    set(handles.NodesID,'position',handles.pnodesN);
+
+    handles.plinksN=handles.plinks;
+    handles.plinksN(2)=6.5;
+    set(handles.LinksID,'position',handles.plinksN);
+
+    handles.pfonttxtN=handles.pfonttxt;
+    handles.pfonttxtN(2)=6.7;
+    set(handles.FontsizeENplotText,'position',handles.pfonttxtN);
+
+    handles.pfontszN=handles.pfontsz;
+    handles.pfontszN(2)=6.7;
+    set(handles.FontsizeENplot,'position',handles.pfontszN);
+%     set(handles.NodesID,'visible','off');
+%     set(handles.LinksID,'visible','off');
+%     set(handles.FontsizeENplotText,'visible','off');
+%     set(handles.FontsizeENplot,'visible','off');
         
     load([pwd,'\RESULTS\','ComWinhandles.B.messsages'],'msg','-mat');
     msg=[msg;{'>> Average Water Age'}];
@@ -645,11 +705,23 @@ pause(.1);
     guidata(hObject, handles);
 set(handles.waterage,'str','Average Water Age','backg',col);
 
+results(handles,'AverageWaterAge','Water Age | (hours)');
+set(handles.NodesID,'value',0);
+set(handles.LinksID,'value',0);
+set(handles.FontsizeENplot,'String',12);
+        
     % --- Executes on button press in demands.
 function demands_Callback(hObject, eventdata, handles)
 % hObject    handle to demands (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if exist([pwd,'\RESULTS\','hNodesID.f'])==2
+    delete([pwd,'\RESULTS\','hNodesID.f'],'hNodesID','-mat');
+end
+if exist([pwd,'\RESULTS\','hLinksID.f'])==2
+    delete([pwd,'\RESULTS\','hLinksID.f'],'hLinksID','-mat');
+end
+        
 col = get(handles.demands,'backg'); 
 set(handles.demands,'str','LOADING...','backg','c') 
 pause(.1);
@@ -678,8 +750,8 @@ pause(.1);
     handles.B.solveCompleteHydraulics
     handles.B.solveCompleteQuality
 
-    AverageDemands=[];
-    AverageDemands=[AverageDemands; handles.B.getNodeActualDemand];
+    handles.AverageDemands=[];
+    handles.AverageDemands=[handles.AverageDemands; handles.B.getNodeActualDemand];
 
     % Colormaps
     handles.B.plot
@@ -700,15 +772,15 @@ pause(.1);
     set(handles.cbar,'FontName','Helvetica','XTickLabel',{'     Low','Guarded','Elevated','High','Very-High'})
 
     for i=1:handles.B.NodeCount
-        if AverageDemands(:,i)<xtick(2)
+        if handles.AverageDemands(:,i)<xtick(2)
             C2='b'; C1='b';MarkerSize=14;
-        elseif xtick(2)<AverageDemands(:,i) && AverageDemands(:,i)<xtick(3)
+        elseif xtick(2)<handles.AverageDemands(:,i) && handles.AverageDemands(:,i)<xtick(3)
             C2='c'; C1='c';MarkerSize=15;
-        elseif xtick(3)<AverageDemands(:,i) && AverageDemands(:,i)<xtick(4)
+        elseif xtick(3)<handles.AverageDemands(:,i) && handles.AverageDemands(:,i)<xtick(4)
             C2='g'; C1='g';MarkerSize=16;
-        elseif xtick(4)<AverageDemands(:,i) && AverageDemands(:,i)<xtick(5)
+        elseif xtick(4)<handles.AverageDemands(:,i) && handles.AverageDemands(:,i)<xtick(5)
             C2=[1 .5 0]; C1=[1 .5 0];MarkerSize=17;
-        elseif xtick(5)<AverageDemands(:,i)
+        elseif xtick(5)<handles.AverageDemands(:,i)
             C2='r'; C1='r';MarkerSize=18;
         end
         plot(handles.axes1,handles.B.NodeCoordinates{1}(i),handles.B.NodeCoordinates{2}(i),'o','LineWidth',2,'MarkerEdgeColor',C1,...
@@ -723,12 +795,36 @@ pause(.1);
     set(handles.wtitle,'visible','on');
     set(handles.wtitle,'String','Average Demand');
     
-    set(handles.SaveNetwork,'visible','off');
-    set(handles.Zoom,'visible','off');
-    set(handles.NodesID,'visible','off');
-    set(handles.LinksID,'visible','off');
-    set(handles.FontsizeENplotText,'visible','off');
-    set(handles.FontsizeENplot,'visible','off');
+%     set(handles.SaveNetwork,'visible','off');
+    handles.psaveN=handles.psave;
+    handles.psaveN(2)=6.5;
+    set(handles.SaveNetwork,'position',handles.psaveN);
+
+%     set(handles.Zoom,'visible','off');
+%     set(handles.Zoom,'String','ResultsWA');
+    handles.pZN=handles.pZ;
+    handles.pZN(2)=6.5;
+    set(handles.Zoom,'position',handles.pZN);
+            
+    handles.pnodesN=handles.pnodes;
+    handles.pnodesN(2)=6.5;
+    set(handles.NodesID,'position',handles.pnodesN);
+
+    handles.plinksN=handles.plinks;
+    handles.plinksN(2)=6.5;
+    set(handles.LinksID,'position',handles.plinksN);
+
+    handles.pfonttxtN=handles.pfonttxt;
+    handles.pfonttxtN(2)=6.7;
+    set(handles.FontsizeENplotText,'position',handles.pfonttxtN);
+
+    handles.pfontszN=handles.pfontsz;
+    handles.pfontszN(2)=6.7;
+    set(handles.FontsizeENplot,'position',handles.pfontszN);
+%     set(handles.NodesID,'visible','off');
+%     set(handles.LinksID,'visible','off');
+%     set(handles.FontsizeENplotText,'visible','off');
+%     set(handles.FontsizeENplot,'visible','off');
     
     load([pwd,'\RESULTS\','ComWinhandles.B.messsages'],'msg','-mat');
     msg=[msg;{'>> Average Demand Selected'}];
@@ -742,6 +838,13 @@ pause(.1);
     guidata(hObject, handles);
     
 set(handles.demands,'str','Average Demand','backg',col);
+
+%%%%%%%%%%%
+s=sprintf('Demand | (%s)',char(handles.B.LinkFlowUnits));
+results2(handles,'AverageDemand',s);
+set(handles.NodesID,'value',0);
+set(handles.LinksID,'value',0);
+set(handles.FontsizeENplot,'String',12);
 
 % --- Executes on button press in Reset.
 function Reset_Callback(hObject, eventdata, handles)
@@ -771,14 +874,28 @@ function Reset_Callback(hObject, eventdata, handles)
     set(handles.wtitle,'visible','off');
 
     set(handles.SaveNetwork,'visible','on');
+    set(handles.SaveNetwork,'position',handles.psave);
+        
     set(handles.Zoom,'visible','on');
+%     set(handles.Zoom,'String','Zoom');
+    set(handles.Zoom,'position',handles.pZ);
+    
     set(handles.NodesID,'visible','on');
-    set(handles.LinksID,'visible','on');      
+    set(handles.NodesID,'position',handles.pnodes);
+
+    set(handles.LinksID,'visible','on');  
+    set(handles.LinksID,'position',handles.plinks);
+
     set(handles.NodesID,'value',0);
     set(handles.LinksID,'value',0);
+    FontsizeENplot_Callback(hObject, eventdata, handles);
 
     set(handles.FontsizeENplotText,'visible','on');
-    set(handles.FontsizeENplot,'visible','on');    
+    set(handles.FontsizeENplotText,'position',handles.pfonttxt);
+
+    set(handles.FontsizeENplot,'visible','on');  
+    set(handles.FontsizeENplot,'position',handles.pfontsz);
+
     set(handles.wtitle,'visible','off');
         
     load([pwd,'\RESULTS\','ComWinhandles.B.messsages'],'msg','-mat');
@@ -849,6 +966,28 @@ pause(.1);
 set(handles.nodesdemands,'str','Nodes With Demand','backg',col);
 
 
+    set(handles.SaveNetwork,'visible','on');
+    set(handles.SaveNetwork,'position',handles.psave);
+        
+    set(handles.Zoom,'visible','on');
+%     set(handles.Zoom,'String','Zoom');
+    set(handles.Zoom,'position',handles.pZ);
+    
+    set(handles.NodesID,'visible','on');
+    set(handles.NodesID,'position',handles.pnodes);
+
+    set(handles.LinksID,'visible','on');  
+    set(handles.LinksID,'position',handles.plinks);
+
+    set(handles.NodesID,'value',0);
+    set(handles.LinksID,'value',0);
+
+    set(handles.FontsizeENplotText,'visible','on');
+    set(handles.FontsizeENplotText,'position',handles.pfonttxt);
+
+    set(handles.FontsizeENplot,'visible','on');  
+    set(handles.FontsizeENplot,'position',handles.pfontsz);
+    
 % --- Executes on button press in Map.
 function Map_Callback(hObject, eventdata, handles)
 % hObject    handle to Map (see GCBO)

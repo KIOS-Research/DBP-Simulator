@@ -380,7 +380,7 @@ classdef epanet <handle
             obj.NodeTankVolumeUnits=value.NodeTankVolumeUnits;
             obj.QualityWaterAgeUnits=value.QualityWaterAgeUnits;
         end % End of epanet class constructor
-        function  errcode = LoadInpFile(obj,inpname,repname,binname,varargin)
+        function errcode = LoadInpFile(obj,inpname,repname,binname,varargin)
             [errcode] = ENopen(inpname,repname,binname);
         end
         function errcode = epanetLoadLibrary(obj)
@@ -2552,7 +2552,7 @@ for i=1:value.LinkCount
     end
     
     if length(hh)
-        line([x1,x2],[y1,y2],'LineWidth',2.3,'Color','g');
+        line([x1,x2],[y1,y2],'LineWidth',2.3,'Color','r');
         text((x1+x2)/2,(y1+y2)/2,value.LinksAll(i),'Fontsize',fontsize);
     end
     hold on
