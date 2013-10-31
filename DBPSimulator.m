@@ -396,19 +396,22 @@ pause(.1);
     Kb=str2num(get(handles.Kb,'String'));
     Kw=str2num(get(handles.Kw,'String'));
 
+    handles.B.setQualityType('age','hour');
+    v=handles.B.getNodeInitialQuality;
+    values=v*0;
+    handles.B.setNodeInitialQuality(values);
+    
     handles.B.setTimeSimulationDuration(simulateTime*3600)%4days
     handles.B.setTimeQualityStep(qualitystep)
     handles.B.setTimeStatisticsType('AVERAGE')
 
     % Simulate all times
-    handles.B.solveCompleteHydraulics
-    handles.B.solveCompleteQuality
+    handles.B.solveCompleteHydraulics;
+    handles.B.solveCompleteQuality;
 
-    handles.B.setQualityType('age','hour')
     handles.B.setLinkBulkReactionCoeff(ones(1,handles.B.LinkCount)*Kb);
     handles.B.setLinkWallReactionCoeff(ones(1,handles.B.LinkCount)*Kw);
-    handles.Qmean=[];  
-    handles.Qmean=[handles.Qmean; handles.B.getNodeActualQuality];
+    handles.Qmean=handles.B.getNodeActualQuality;
 
     bd=find(handles.B.NodeBaseDemands);
     h=figure;
@@ -424,8 +427,7 @@ pause(.1);
     % Simulate all times
     handles.B.solveCompleteHydraulics
     handles.B.solveCompleteQuality
-    handles.Qmax=[];  
-    handles.Qmax=[handles.Qmax; handles.B.getNodeActualQuality];
+    handles.Qmax=handles.B.getNodeActualQuality;
             
     figure(h)
     subplot(2,2,2)
@@ -606,11 +608,14 @@ pause(.1);
     Kb=str2num(get(handles.Kb,'String'));
     Kw=str2num(get(handles.Kw,'String'));
         
-    handles.B.setQualityType('age','hour')
-        
-    handles.B.setTimeSimulationDuration(simulateTime*3600)%4days
-    handles.B.setTimeQualityStep(qualitystep)
-    handles.B.setTimeStatisticsType('AVERAGE')
+    handles.B.setQualityType('age','hour');
+    v=handles.B.getNodeInitialQuality;
+    values=v*0;
+    handles.B.setNodeInitialQuality(values);
+
+    handles.B.setTimeSimulationDuration(simulateTime*3600);
+    handles.B.setTimeQualityStep(qualitystep);
+    handles.B.setTimeStatisticsType('AVERAGE');
 
     % Simulate all times
     handles.B.solveCompleteHydraulics
@@ -619,8 +624,7 @@ pause(.1);
     handles.B.setLinkBulkReactionCoeff(ones(1,handles.B.LinkCount)*Kb);
     handles.B.setLinkWallReactionCoeff(ones(1,handles.B.LinkCount)*Kw);
 
-    handles.WaterAge=[];  
-    handles.WaterAge=[handles.WaterAge; handles.B.getNodeActualQuality];
+    handles.WaterAge=handles.B.getNodeActualQuality;
 
     % Colormaps
     handles.B.plot
@@ -750,8 +754,7 @@ pause(.1);
     handles.B.solveCompleteHydraulics
     handles.B.solveCompleteQuality
 
-    handles.AverageDemands=[];
-    handles.AverageDemands=[handles.AverageDemands; handles.B.getNodeActualDemand];
+    handles.AverageDemands=handles.B.getNodeActualDemand;
 
     % Colormaps
     handles.B.plot

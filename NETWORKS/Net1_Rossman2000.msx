@@ -1,0 +1,55 @@
+[TITLE]
+Example Test
+
+[OPTIONS]
+AREA_UNITS  FT2
+RATE_UNITS  DAY
+SOLVER      EUL
+TIMESTEP    7200
+RTOL        0.001
+ATOL        0.001
+
+[SPECIES]
+BULK        Chlorine    MG  0.01 0.001
+BULK        Age         MG  0.01 0.001
+BULK        THMs        UG  0.01 0.001
+
+[COEFFICIENTS]
+PARAMETER   Kb     0.5
+
+[TERMS]
+
+[PIPE]
+RATE        Chlorine    -Kb*Chlorine 
+RATE        Age         1  
+RATE        THMs        Kb*THMs 
+
+[TANK]
+RATE        Chlorine    -Kb*Chlorine
+RATE        Age         1  
+RATE        THMs        Kb*THMs 
+
+[REPORT]
+NODES   ALL
+LINKS   ALL
+SPECIE  Chlorine YES
+SPECIE  Age      YES
+SPECIE  THMs     YES
+
+[PARAMETERS]
+;PIPE        <pipeID>      <paramID>     <value>
+;TANK        <tankID>      <paramID>     <value>
+
+[QUALITY]
+NODE    9       THMs                         25
+
+[SOURCES]
+;CONC/MASS/FLOW/SETPOINT   <nodeID>      <specieID>     <strength>     (<tseriesID>)
+CONC        9             Chlorine           1                 1
+;CONC        9             THMs              25                 2
+
+[PATTERNS]
+1               	1         	1         	1         	1         	1         	1         
+1               	1         	1         	1         	1         	1         	1
+1               	1         	1         	1         	1         	1         	1
+1               	1         	1         	1         	1         	1         	1

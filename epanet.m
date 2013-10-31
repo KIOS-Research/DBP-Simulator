@@ -1687,9 +1687,8 @@ classdef epanet <handle
         end
         function value = getMsxParametersTanksValue(obj)
             value={};
-            if ~obj.getMsxParametersCount
-                value=0;return;
-            end
+            if ~obj.getMsxParametersCount,value=0;return; end
+            if ~length(obj.NodeTankIndex),value=0;return; end
             for i=1:length(obj.getNodeTankCount)
                 for j=1:obj.MsxParametersCount
                     [obj.errcode, value{obj.NodeTankIndex(i)}(j)] = MSXgetparameter(0,obj.NodeTankIndex(i),j);
@@ -1861,17 +1860,15 @@ classdef epanet <handle
                 % Run a step-wise water quality analysis without saving
                 % RESULTS to file
                 obj.MsxInitializeQualityAnalysis(0);
-                
-                [t, tleft]=obj.MsxStepQualityAnalysisTimeLeft();
-                
+                                
                 % Retrieve species concentration at node
-                k=1;
+                k=1; tleft=1;
                 while(tleft>0 && obj.errcode==0)
                     [t, tleft]=obj.MsxStepQualityAnalysisTimeLeft();
-                    value.Time(k,:)=t;
                     for j=1:obj.getMsxSpeciesCount
                         value.Quality{j,i}(k,:)=obj.getMsxSpeciesConcentration(0, i, j);%node code0
                     end
+                    value.Time(k,:)=t;
                     k=k+1;
                 end
             end
@@ -1887,17 +1884,15 @@ classdef epanet <handle
                 % Run a step-wise water quality analysis without saving
                 % RESULTS to file
                 obj.MsxInitializeQualityAnalysis(0);
-                
-                [t, tleft]=obj.MsxStepQualityAnalysisTimeLeft();
-                
+                                
                 % Retrieve species concentration at node
-                k=1;
+                k=1;tleft=1;
                 while(tleft>0 && obj.errcode==0)
                     [t, tleft]=obj.MsxStepQualityAnalysisTimeLeft();
-                    value.Time(k,:)=t;
                     for j=1:obj.getMsxSpeciesCount
                         value.Quality{j,i}(k,:)=obj.getMsxSpeciesConcentration(1, i, j);%node code0
                     end
+                    value.Time(k,:)=t;
                     k=k+1;
                 end
             end
@@ -1909,13 +1904,12 @@ classdef epanet <handle
             SpCnt=obj.getMsxSpeciesCount;
             NodCnt=obj.getNodeCount;
             for l=1:NodCnt
+                nodeID=nodesID(l);
+                figure('Name',['NODE ',char(nodeID)]);
                 for i=1:SpCnt
-                    nodeID=nodesID(l);
-                    hold on;
                     specie(:,i)=s.Quality{i,l};
                     time(:,i)=s.Time;
                 end
-                figure('Name',['NODE ',char(nodeID)]);
                 plot(time,specie);
                 title(['NODE ',char(nodeID)]);
                 ylabel('Quantity');
@@ -1930,13 +1924,12 @@ classdef epanet <handle
             SpCnt=obj.getMsxSpeciesCount;
             LinkCnt=obj.getLinkCount;
             for l=1:LinkCnt
+                linkID=linksID(l);
+                figure('Name',['LINK ',char(linkID)]);
                 for i=1:SpCnt
-                    linkID=linksID(l);
-                    hold on;
                     specie(:,i)=s.Quality{i,l};
                     time(:,i)=s.Time;
                 end
-                figure('Name',['LINK ',char(linkID)]);
                 plot(time,specie);
                 title(['LINK ',char(linkID)]);
                 ylabel('Quantity');
@@ -2519,7 +2512,7 @@ for i=1:value.LinkCount
     hh=strfind(highlightlinkindex,i);
     
     %         h(:,4)=line([x1,x2],[y1,y2],'LineWidth',1);
-    h(:,4)=line([x1 NodeCoordinates{3}{i} x2],[y1 NodeCoordinates{4}{i} y2],'LineWidth',2.3);
+    h(:,4)=line([x1 NodeCoordinates{3}{i} x2],[y1 NodeCoordinates{4}{i} y2],'LineWidth',1);
     
     legendString{4} = char('Pipes');
     % Plot Pumps
@@ -2528,10 +2521,10 @@ for i=1:value.LinkCount
         if length(hh)
             colornode = 'r';
         end
-        h(:,5)=plot((x1+x2)/2,(y1+y2)/2,'mv','LineWidth',2.3,'MarkerEdgeColor','m',...
+        h(:,5)=plot((x1+x2)/2,(y1+y2)/2,'mv','LineWidth',2,'MarkerEdgeColor','m',...
             'MarkerFaceColor','m',...
             'MarkerSize',5);
-        plot((x1+x2)/2,(y1+y2)/2,'mv','LineWidth',2.3,'MarkerEdgeColor',colornode,...
+        plot((x1+x2)/2,(y1+y2)/2,'mv','LineWidth',2,'MarkerEdgeColor',colornode,...
             'MarkerFaceColor',colornode,...
             'MarkerSize',5);
         
@@ -2540,9 +2533,12 @@ for i=1:value.LinkCount
     
     % Plot Valves
     if sum(strfind(value.LinkValveIndex,i))
-        h(:,6)=plot((x1+x2)/2,(y1+y2)/2,'y*','LineWidth',2.3,'MarkerEdgeColor','y',...
-            'MarkerFaceColor','y',...
-            'MarkerSize',7);
+        colornode = 'k';
+        if length(hh)
+            colornode = 'r';
+        end
+        h(:,6)=plot((x1+x2)/2,(y1+y2)/2,'k*','LineWidth',2,'MarkerEdgeColor',colornode,...
+            'MarkerFaceColor',colornode,'MarkerSize',7);
         legendString{6} = char('Valves');
     end
     
@@ -2552,7 +2548,7 @@ for i=1:value.LinkCount
     end
     
     if length(hh)
-        line([x1,x2],[y1,y2],'LineWidth',2.3,'Color','r');
+        line([x1,x2],[y1,y2],'LineWidth',2,'Color','r');
         text((x1+x2)/2,(y1+y2)/2,value.LinksAll(i),'Fontsize',fontsize);
     end
     hold on
@@ -2564,7 +2560,7 @@ for i=1:value.NodeCount
     [y] = double(NodeCoordinates{2}(i));
     
     hh=strfind(highlightnodeindex,i);
-    h(:,1)=plot(x, y,'o','LineWidth',3,'MarkerEdgeColor','b',...
+    h(:,1)=plot(x, y,'o','LineWidth',2,'MarkerEdgeColor','b',...
         'MarkerFaceColor','b',...
         'MarkerSize',5);
     legendString{1}= char('Junctions');
@@ -2575,10 +2571,10 @@ for i=1:value.NodeCount
         if length(hh)
             colornode = 'r';
         end
-        h(:,2)=plot(x,y,'s','LineWidth',3,'MarkerEdgeColor','g',...
+        h(:,2)=plot(x,y,'s','LineWidth',2,'MarkerEdgeColor','g',...
             'MarkerFaceColor','g',...
             'MarkerSize',13);
-        plot(x,y,'s','LineWidth',3,'MarkerEdgeColor','g',...
+        plot(x,y,'s','LineWidth',2,'MarkerEdgeColor',colornode,...
             'MarkerFaceColor',colornode,...
             'MarkerSize',13);
         
@@ -2590,11 +2586,11 @@ for i=1:value.NodeCount
         if length(hh)
             colornode = 'r';
         end
-        h(:,3)=plot(x,y,'p','LineWidth',3,'MarkerEdgeColor','c',...
+        h(:,3)=plot(x,y,'p','LineWidth',2,'MarkerEdgeColor','c',...
             'MarkerFaceColor','c',...
             'MarkerSize',16);
         
-        plot(x,y,'p','LineWidth',3,'MarkerEdgeColor','c',...
+        plot(x,y,'p','LineWidth',2,'MarkerEdgeColor',colornode,...
             'MarkerFaceColor',colornode,...
             'MarkerSize',16);
         
@@ -2607,7 +2603,7 @@ for i=1:value.NodeCount
     end
     
     if length(hh)
-        plot(x, y,'o','LineWidth',3,'MarkerEdgeColor','r',...
+        plot(x, y,'o','LineWidth',2,'MarkerEdgeColor','r',...
             'MarkerFaceColor','r',...
             'MarkerSize',10)
         
@@ -2737,6 +2733,13 @@ obj.MSXFile = msxname;
 [obj.errcode] = MSXopen(obj.MSXPathFile);
 %Set path of temporary file
 obj.pathfile=[pwd,'\RESULTS\temp.msx'];
+
+if ~strcmpi(msxname,'temp.msx')
+    dir_struct = dir(strcat(obj.pathfile));
+    [~,sorted_index] = sortrows({dir_struct.name}');
+    if length(sorted_index), delete(obj.pathfile); end
+end
+
 %Save the temporary input file
 obj.MsxSaveFile(obj.pathfile);
 %Close msx file
