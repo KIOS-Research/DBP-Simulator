@@ -8,6 +8,7 @@ Arsenic Oxidation/Adsorption Example
   TIMESTEP   360            ;360 sec (5 min) solution time step
   RTOL       0.001          ;Relative concentration tolerance
   ATOL       0.0001         ;Absolute concentration tolerance
+  COMPILER   NONE
 
 [SPECIES]
   BULK AS3   UG             ;Dissolved arsenite
@@ -55,7 +56,4 @@ Arsenic Oxidation/Adsorption Example
   SPECIE  AStot YES            ;Report results for each specie
   SPECIE  AS5   YES
   SPECIE  AS5s  YES
-  SPECIE  AS3   YES
   SPECIE  NH2CL YES
-  NODES   ALL
-  LINKS   ALL

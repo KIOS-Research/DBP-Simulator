@@ -1,0 +1,54 @@
+[TITLE]
+ Template Example
+
+
+[OPTIONS]
+AREA_UNITS  FT2
+RATE_UNITS  DAY
+SOLVER      EUL
+TIMESTEP    300
+RTOL        0.001
+ATOL        0.001
+
+
+[SPECIES]
+BULK        CL2    MG  0.01 0.001
+BULK        CHCL3  UG ;Chloroform
+BULK        AGE    MG
+
+
+[COEFFICIENTS]
+PARAMETER   Kb     -0.5
+PARAMETER   Kw     0
+;slope of THM formation vs total chlorine decay (UG/MG)
+PARAMETER   DF_CHCL3 57.87 ;Chloroform Formation
+
+[TERMS]
+Kf     1.5826e-4 * RE^0.88 / D
+a1     DF_CHCL3*Kb*CL2  ;formation of chloroform
+
+[PIPE]
+RATE        CL2    -Kb*CL2 - (4/D)*Kw*Kf/(Kw+Kf)*CL2
+RATE        CHCL3   a1
+RATE        AGE     1
+
+[TANK]
+RATE        CL2    -Kb*CL2
+RATE        CHCL3   a1 ;- a7 - a11
+RATE        AGE     1
+
+[SOURCES]
+;CONC/MASS/FLOW/SETPOINT   <nodeID>      <specieID>     <strength>     (<tseriesID>)
+
+
+[QUALITY]
+
+[PARAMETERS]
+;PIPE        <pipeID>      <paramID>     <value>
+;TANK        <tankID>      <paramID>     <value>
+
+[REPORT]
+NODES  ALL
+LINKS  ALL
+SPECIE CL2 YES
+SPECIE CHCL3 YES
