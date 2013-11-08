@@ -1,4 +1,4 @@
-function Simulate()
+function DSimulate()
     fclose all;close all;
     clc;
     clear all;
